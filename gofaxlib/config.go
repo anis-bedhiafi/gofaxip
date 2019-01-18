@@ -67,6 +67,14 @@ type config struct {
 		FailedResponse       []string
 		FailedResponseMap    map[string]bool
 	}
+	MySQL struct {
+		Host     string
+		Port     string
+		User     string
+		Pass     string
+		Database string
+		Charset  string
+	}
 }
 
 // LoadConfig loads the configuration from given file path

@@ -18,7 +18,9 @@
 package gofaxlib
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"time"
 )
 
@@ -93,6 +95,24 @@ func (r *XFRecord) SaveTransmissionReport() error {
 	return AppendTo(Config.Hylafax.Xferfaxlog, r.formatTransmissionReport())
 }
 
+// SaveTxCdrToDB adds a transmisison record to the mysql database
+func (r *XFRecord) SaveTxCdrToDB() bool {
+	if Config.MySQL.Host == "" && Config.MySQL.User == "" && Config.MySQL.Pass == "" && Config.MySQL.Database == "" {
+		return false
+	}
+
+	return log_cdr_db()
+}
+
+// SaveRxCdrToDB adds a transmisison record to the mysql database
+// func (r *XFRecord) SaveRXCDRToDB() error {
+// 	if Config.MySQL.Host == "" && Config.MySQL.User == "" && Config.MySQL.Pass == "" && Config.MySQL.Database == "" {
+// 		//return nil
+// 	}
+
+// 	return log_cdr_db()
+// }
+
 // SaveReceptionReport appends a reception record to the configured xferfaxlog file
 func (r *XFRecord) SaveReceptionReport() error {
 	if Config.Hylafax.Xferfaxlog == "" {
@@ -136,4 +156,26 @@ func EncodeParams(baudrate uint, ecm bool) uint {
 	}
 
 	return (br << 3) | (ec << 16)
+}
+
+func log_cdr_db() bool {
+	db, err := sql.Open("mysql", Config.MySQL.User+":"+Config.MySQL.Pass+"@tcp("+Config.MySQL.Host+":"+Config.MySQL.Port+")/"+Config.MySQL.Database+"?charset="+Config.MySQL.Charset)
+	if err != nil {
+		log.Fatal("Cannot open DB connection", err)
+	}
+	// defer the close till after the main function has finished
+	defer db.Close()
+
+	stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, localnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
+	if err != nil {
+		log.Fatal("Cannot prepare DB statement", err)
+	}
+	// Close the statement when we leave main()
+	defer stmt.Close()
+
+	_, err = stmt.Exec("2019-01-15 17:39:00", "SEND", "00002339", "freeswitch4", "122", "", "a.bedhiafi@netcom-group.fr", "33184039108", "", "65576", 3, "00:01:06", "00:01:06", "OK", "", "", "", "faxmaster", "T.85")
+	if err != nil {
+		log.Fatal("Cannot run insert statement", err)
+	}
+	return true
 }
