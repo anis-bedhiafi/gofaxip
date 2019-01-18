@@ -32,8 +32,6 @@ const (
 	tsLayout   = "25/02/2019 15:04:00"
 )
 
-//var db *sql.DB
-
 // XFRecord holds all data for a HylaFAX xferfaxlog record
 type XFRecord struct {
 	Ts       time.Time
