@@ -29,8 +29,10 @@ import (
 const (
 	// 19 fields
 	xLogFormat = "%s\t%s\t%s\t%s\t%v\t\"%s\"\t%s\t\"%s\"\t\"%s\"\t%d\t%d\t%s\t%s\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\""
-	tsLayout   = "01/02/06 15:04"
+	tsLayout   = "25/02/2019 15:04:00"
 )
+
+//var db *sql.DB
 
 // XFRecord holds all data for a HylaFAX xferfaxlog record
 type XFRecord struct {
@@ -91,27 +93,62 @@ func (r *XFRecord) formatReceptionReport() string {
 
 // SaveTransmissionReport appends a transmisison record to the configured xferfaxlog file
 func (r *XFRecord) SaveTransmissionReport() error {
-	if Config.Hylafax.Xferfaxlog == "" {
+	if Config.Log.Xferfaxlog == "" {
 		return nil
 	}
 	return AppendTo(Config.Hylafax.Xferfaxlog, r.formatTransmissionReport())
 }
 
-// SaveTxCdrToDB adds a transmisison record to the mysql database
-func (r *XFRecord) SaveTxCdrToDB() error {
-	if Config.MySQL.Host == "" && Config.MySQL.User == "" && Config.MySQL.Pass == "" && Config.MySQL.Database == "" {
-		return nil
-	}
-
-	return log_cdr_db()
-}
-
 // SaveReceptionReport appends a reception record to the configured xferfaxlog file
 func (r *XFRecord) SaveReceptionReport() error {
-	if Config.Hylafax.Xferfaxlog == "" {
+	if Config.Log.Xferfaxlog == "" {
 		return nil
 	}
 	return AppendTo(Config.Hylafax.Xferfaxlog, r.formatReceptionReport())
+}
+
+// SaveTxCdrToDB adds a transmisison record to the mysql database
+func (r *XFRecord) SaveTxCdrToDB() error {
+	db, err := DBConnect()
+	if db != nil {
+		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, localnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
+		if err != nil {
+			log.Fatal("Cannot prepare DB statement", err)
+			return err
+		}
+		// Close the statement when we leave main()
+		defer stmt.Close()
+
+		_, err = stmt.Exec(r.Ts.Format(tsLayout), "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, "", "", "", r.Owner, r.Dcs)
+		if err != nil {
+			log.Fatal("Cannot execute query", err)
+			return err
+		}
+		return nil
+	}
+	return err
+}
+
+// SaveRxCdrToDB adds a reception record to the mysql database
+func (r *XFRecord) SaveRxCdrToDB() error {
+	db, err := DBConnect()
+	if db != nil {
+		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, localnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
+		if err != nil {
+			log.Fatal("Cannot prepare DB statement", err)
+			return err
+		}
+		// Close the statement when we leave main()
+		defer stmt.Close()
+
+		_, err = stmt.Exec(r.Ts.Format(tsLayout), "RECV", r.Commid, r.Modem, r.Filename, "", "fax", r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, fmt.Sprintf("\"%s\"", r.Cidname), fmt.Sprintf("\"%s\"", r.Cidnum), "", "", r.Dcs)
+		if err != nil {
+			log.Fatal("Cannot execute query", err)
+			return err
+		}
+		return nil
+	}
+	return err
 }
 
 func formatDuration(d time.Duration) string {
@@ -151,26 +188,24 @@ func EncodeParams(baudrate uint, ecm bool) uint {
 	return (br << 3) | (ec << 16)
 }
 
-func log_cdr_db() error {
-	db, err := sql.Open("mysql", Config.MySQL.User+":"+Config.MySQL.Pass+"@tcp("+Config.MySQL.Host+":"+Config.MySQL.Port+")/"+Config.MySQL.Database+"?charset="+Config.MySQL.Charset)
+func DBConnect() (*sql.DB, error) {
+	if Config.MySQL.Host == "" && Config.MySQL.User == "" && Config.MySQL.Pass == "" && Config.MySQL.Database == "" {
+		log.Fatal("DB connection parameters missing")
+		return nil, nil
+	}
+
+	charset := Config.MySQL.Charset
+	if charset == "" {
+		charset = "utf8"
+	}
+
+	db, err := sql.Open("mysql", Config.MySQL.User+":"+Config.MySQL.Pass+"@tcp("+Config.MySQL.Host+":"+Config.MySQL.Port+")/"+Config.MySQL.Database+"?charset="+charset)
 	if err != nil {
 		log.Fatal("Cannot open DB connection", err)
+		return nil, err
 	}
 	// defer the close till after the main function has finished
 	defer db.Close()
 
-	stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, localnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
-	if err != nil {
-		log.Fatal("Cannot prepare DB statement", err)
-	}
-	// Close the statement when we leave main()
-	defer stmt.Close()
-
-	_, err = stmt.Exec("2019-01-15 17:39:00", "SEND", "00002339", "freeswitch4", "122", "", "a.bedhiafi@netcom-group.fr", "33184039108", "", "65576", 3, "00:01:06", "00:01:06", "OK", "", "", "", "faxmaster", "T.85")
-	if err != nil {
-		log.Fatal("Cannot run insert statement", err)
-		return nil
-	} else {
-		return err
-	}
+	return db, nil
 }

@@ -44,6 +44,13 @@ type config struct {
 		Spooldir   string
 		Modems     uint
 		Xferfaxlog string
+		Logtofile  bool
+		Logtodb    bool
+	}
+	Log struct {
+		Xferfaxlog string
+		Logtofile  bool
+		Logtodb    bool
 	}
 	Gofaxd struct {
 		EnableT38              bool
