@@ -20,9 +20,9 @@ package gofaxlib
 import (
 	"log"
 
-	"github.com/gonicus/gofaxip/gofaxlib/logger"
+	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib/logger"
 
-	"gopkg.in/gcfg.v1"
+	gcfg "gopkg.in/gcfg.v1"
 )
 
 var (
