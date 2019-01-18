@@ -96,22 +96,13 @@ func (r *XFRecord) SaveTransmissionReport() error {
 }
 
 // SaveTxCdrToDB adds a transmisison record to the mysql database
-func (r *XFRecord) SaveTxCdrToDB() bool {
+func (r *XFRecord) SaveTxCdrToDB() error {
 	if Config.MySQL.Host == "" && Config.MySQL.User == "" && Config.MySQL.Pass == "" && Config.MySQL.Database == "" {
-		return false
+		return nil
 	}
 
 	return log_cdr_db()
 }
-
-// SaveRxCdrToDB adds a transmisison record to the mysql database
-// func (r *XFRecord) SaveRXCDRToDB() error {
-// 	if Config.MySQL.Host == "" && Config.MySQL.User == "" && Config.MySQL.Pass == "" && Config.MySQL.Database == "" {
-// 		//return nil
-// 	}
-
-// 	return log_cdr_db()
-// }
 
 // SaveReceptionReport appends a reception record to the configured xferfaxlog file
 func (r *XFRecord) SaveReceptionReport() error {
@@ -158,7 +149,7 @@ func EncodeParams(baudrate uint, ecm bool) uint {
 	return (br << 3) | (ec << 16)
 }
 
-func log_cdr_db() bool {
+func log_cdr_db() error {
 	db, err := sql.Open("mysql", Config.MySQL.User+":"+Config.MySQL.Pass+"@tcp("+Config.MySQL.Host+":"+Config.MySQL.Port+")/"+Config.MySQL.Database+"?charset="+Config.MySQL.Charset)
 	if err != nil {
 		log.Fatal("Cannot open DB connection", err)
@@ -176,6 +167,8 @@ func log_cdr_db() bool {
 	_, err = stmt.Exec("2019-01-15 17:39:00", "SEND", "00002339", "freeswitch4", "122", "", "a.bedhiafi@netcom-group.fr", "33184039108", "", "65576", 3, "00:01:06", "00:01:06", "OK", "", "", "", "faxmaster", "T.85")
 	if err != nil {
 		log.Fatal("Cannot run insert statement", err)
+		return nil
+	} else {
+		return err
 	}
-	return true
 }

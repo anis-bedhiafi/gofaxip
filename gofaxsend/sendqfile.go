@@ -274,6 +274,9 @@ func SendQfile(qfilename string) (int, error) {
 		// if err = xfl.SaveTransmissionReport(); err != nil {
 		// 	sessionlog.Log(err)
 		// }
+		if err = xfl.SaveTxCdrToDB(); err != nil {
+			sessionlog.Log(err)
+		}
 	}
 
 	return returned, faxerr
