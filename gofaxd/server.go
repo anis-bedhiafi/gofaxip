@@ -270,12 +270,12 @@ EventLoop:
 	xfl.Destnum = recipient
 	xfl.Cidnum = cidnum
 	xfl.Cidname = cidname
-	if gofaxlib.Config.Log.Logtodb {
+	if gofaxlib.Config.Log.Logtodb == true {
 		if err = xfl.SaveRxCdrToDB(); err != nil {
 			sessionlog.Log(err)
 		}
 	}
-	if gofaxlib.Config.Log.Logtofile {
+	if gofaxlib.Config.Log.Logtofile == true {
 		if err = xfl.SaveReceptionReport(); err != nil {
 			sessionlog.Log(err)
 		}
