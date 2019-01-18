@@ -270,9 +270,9 @@ EventLoop:
 	xfl.Destnum = recipient
 	xfl.Cidnum = cidnum
 	xfl.Cidname = cidname
-	if err = xfl.SaveReceptionReport(); err != nil {
-		sessionlog.Log(err)
-	}
+	// if err = xfl.SaveReceptionReport(); err != nil {
+	// 	sessionlog.Log(err)
+	// }
 
 	// If reception failed:
 	// Check if softmodem fallback should be enabled on the next call
