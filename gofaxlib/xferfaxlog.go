@@ -91,18 +91,18 @@ func (r *XFRecord) formatReceptionReport() string {
 
 // SaveTransmissionReport appends a transmisison record to the configured xferfaxlog file
 func (r *XFRecord) SaveTransmissionReport() error {
-	if Config.Hylafax.Xferfaxlog == "" {
+	if Config.Log.Xferfaxlog == "" {
 		return nil
 	}
-	return AppendTo(Config.Hylafax.Xferfaxlog, r.formatTransmissionReport())
+	return AppendTo(Config.Log.Xferfaxlog, r.formatTransmissionReport())
 }
 
 // SaveReceptionReport appends a reception record to the configured xferfaxlog file
 func (r *XFRecord) SaveReceptionReport() error {
-	if Config.Hylafax.Xferfaxlog == "" {
+	if Config.Log.Xferfaxlog == "" {
 		return nil
 	}
-	return AppendTo(Config.Hylafax.Xferfaxlog, r.formatReceptionReport())
+	return AppendTo(Config.Log.Xferfaxlog, r.formatReceptionReport())
 }
 
 // SaveTxCdrToDB adds a transmisison record to the mysql database

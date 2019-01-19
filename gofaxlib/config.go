@@ -41,8 +41,10 @@ type config struct {
 		SoftmodemFallback bool
 	}
 	Hylafax struct {
-		Spooldir   string
-		Modems     uint
+		Spooldir string
+		Modems   uint
+	}
+	Log struct {
 		Xferfaxlog string
 	}
 	Gofaxd struct {
