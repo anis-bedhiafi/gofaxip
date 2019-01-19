@@ -29,7 +29,7 @@ import (
 const (
 	// 19 fields
 	xLogFormat = "%s\t%s\t%s\t%s\t%v\t\"%s\"\t%s\t\"%s\"\t\"%s\"\t%d\t%d\t%s\t%s\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\"\t\"%s\""
-	tsLayout   = "25/02/2019 15:04:00"
+	tsLayout   = "01/02/06 15:04"
 )
 
 // XFRecord holds all data for a HylaFAX xferfaxlog record
@@ -50,6 +50,7 @@ type XFRecord struct {
 	Reason   string
 	Cidname  string
 	Cidnum   string
+	Callid   string
 	Owner    string
 	Dcs      string
 }
@@ -79,14 +80,14 @@ func NewXFRecord(result *FaxResult) *XFRecord {
 func (r *XFRecord) formatTransmissionReport() string {
 	return fmt.Sprintf(xLogFormat, r.Ts.Format(tsLayout), "SEND", r.Commid, r.Modem,
 		r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.Params, r.Pages,
-		formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, "", "", "", r.Owner, r.Dcs)
+		formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, r.Owner, r.Dcs)
 }
 
 func (r *XFRecord) formatReceptionReport() string {
 	return fmt.Sprintf(xLogFormat, r.Ts.Format(tsLayout), "RECV", r.Commid, r.Modem,
 		r.Filename, "", "fax", r.Destnum, r.RemoteID, r.Params, r.Pages,
 		formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason,
-		fmt.Sprintf("\"%s\"", r.Cidname), fmt.Sprintf("\"%s\"", r.Cidnum), "", "", r.Dcs)
+		fmt.Sprintf("\"%s\"", r.Cidname), fmt.Sprintf("\"%s\"", r.Cidnum), r.Callid, "", r.Dcs)
 }
 
 // SaveTransmissionReport appends a transmisison record to the configured xferfaxlog file
@@ -108,7 +109,6 @@ func (r *XFRecord) SaveReceptionReport() error {
 // SaveTxCdrToDB adds a transmisison record to the mysql database
 func (r *XFRecord) SaveTxCdrToDB() error {
 	db, err := DBConnect()
-	// defer the close till after the main function has finished
 	defer db.Close()
 
 	if db != nil {
@@ -116,10 +116,9 @@ func (r *XFRecord) SaveTxCdrToDB() error {
 		if err != nil {
 			log.Fatal("Cannot prepare DB statement", err)
 		}
-		// Close the statement when we leave main()
 		defer stmt.Close()
 
-		_, err = stmt.Exec(r.Ts, "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, "", "", "", r.Owner, r.Dcs)
+		_, err = stmt.Exec(r.Ts, "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, r.Owner, r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
 		}
@@ -133,14 +132,24 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 	defer db.Close()
 
 	if db != nil {
+		//get user's email
+		var useremail string
+		if r.Destnum != "" {
+			err = db.QueryRow("SELECT email from numbers where destnumber = ?", r.Destnum).Scan(&useremail)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			useremail = r.Destnum
+		}
+
 		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, destnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 		if err != nil {
 			log.Fatal("Cannot prepare DB statement", err)
 		}
-		// Close the statement when we leave main()
 		defer stmt.Close()
 
-		_, err = stmt.Exec(r.Ts, "RECV", r.Commid, r.Modem, r.Filename, "", "fax", r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, "", "", r.Dcs)
+		_, err = stmt.Exec(r.Ts, "RECV", r.Commid, r.Modem, r.Filename, "", useremail, r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, useremail, r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
 		}

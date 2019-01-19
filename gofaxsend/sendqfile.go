@@ -271,6 +271,9 @@ func SendQfile(qfilename string) (int, error) {
 		xfl.Sender = qf.GetString("mailaddr")
 		xfl.Destnum = qf.GetString("number")
 		xfl.Owner = qf.GetString("owner")
+		xfl.Cidname = faxjob.Cidname
+		xfl.Cidnum = faxjob.Cidnum
+		xfl.Callid = faxjob.UUID.String()
 		if gofaxlib.Config.Log.Logtofile {
 			if err = xfl.SaveTransmissionReport(); err != nil {
 				sessionlog.Log(err)
