@@ -270,7 +270,7 @@ EventLoop:
 	xfl.Destnum = recipient
 	xfl.Cidnum = cidnum
 	xfl.Cidname = cidname
-	xfl.Callid = channelUUID
+	xfl.Callid = channelUUID.String()
 	if gofaxlib.Config.Log.Logtofile {
 		if err = xfl.SaveReceptionReport(); err != nil {
 			sessionlog.Log(err)
