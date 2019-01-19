@@ -271,13 +271,13 @@ func SendQfile(qfilename string) (int, error) {
 		xfl.Sender = qf.GetString("mailaddr")
 		xfl.Destnum = qf.GetString("number")
 		xfl.Owner = qf.GetString("owner")
-		//if gofaxlib.Config.Log.Logtodb == true {
-		//if err = xfl.SaveTxCdrToDB(); err != nil {
-		//	sessionlog.Log(err)
-		//}
-		//}
 		if gofaxlib.Config.Log.Logtofile {
 			if err = xfl.SaveTransmissionReport(); err != nil {
+				sessionlog.Log(err)
+			}
+		}
+		if gofaxlib.Config.Log.Logtodb == true {
+			if err = xfl.SaveTxCdrToDB(); err != nil {
 				sessionlog.Log(err)
 			}
 		}
