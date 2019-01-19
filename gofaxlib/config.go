@@ -45,11 +45,6 @@ type config struct {
 		Modems     uint
 		Xferfaxlog string
 	}
-	Log struct {
-		Xferfaxlog string
-		Logtofile  bool
-		Logtodb    bool
-	}
 	Gofaxd struct {
 		EnableT38              bool
 		RequestT38             bool
