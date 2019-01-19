@@ -112,14 +112,14 @@ func (r *XFRecord) SaveTxCdrToDB() error {
 	defer db.Close()
 
 	if db != nil {
-		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, localnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
+		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, destnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 		if err != nil {
 			log.Fatal("Cannot prepare DB statement", err)
 		}
 		// Close the statement when we leave main()
 		defer stmt.Close()
 
-		_, err = stmt.Exec(r.Ts.Format(tsLayout), "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, "", "", "", r.Owner, r.Dcs)
+		_, err = stmt.Exec(r.Ts, "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, "", "", "", r.Owner, r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
 		}
@@ -133,14 +133,14 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 	defer db.Close()
 
 	if db != nil {
-		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, localnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
+		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, destnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 		if err != nil {
 			log.Fatal("Cannot prepare DB statement", err)
 		}
 		// Close the statement when we leave main()
 		defer stmt.Close()
 
-		_, err = stmt.Exec(r.Ts.Format(tsLayout), "RECV", r.Commid, r.Modem, r.Filename, "", "fax", r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, fmt.Sprintf("\"%s\"", r.Cidname), fmt.Sprintf("\"%s\"", r.Cidnum), "", "", r.Dcs)
+		_, err = stmt.Exec(r.Ts, "RECV", r.Commid, r.Modem, r.Filename, "", "fax", r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, "", "", r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
 		}
