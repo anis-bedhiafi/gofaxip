@@ -276,11 +276,11 @@ func SendQfile(qfilename string) (int, error) {
 		//	sessionlog.Log(err)
 		//}
 		//}
-		//if gofaxlib.Config.Log.Logtofile == true {
-		if err = xfl.SaveTransmissionReport(); err != nil {
-			sessionlog.Log(err)
+		if gofaxlib.Config.Log.Logtofile {
+			if err = xfl.SaveTransmissionReport(); err != nil {
+				sessionlog.Log(err)
+			}
 		}
-		//}
 	}
 
 	return returned, faxerr

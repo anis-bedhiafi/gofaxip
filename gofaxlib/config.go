@@ -46,6 +46,7 @@ type config struct {
 	}
 	Log struct {
 		Xferfaxlog string
+		Logtofile  bool
 	}
 	Gofaxd struct {
 		EnableT38              bool
