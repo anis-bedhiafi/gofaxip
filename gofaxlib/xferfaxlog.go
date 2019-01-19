@@ -108,11 +108,13 @@ func (r *XFRecord) SaveReceptionReport() error {
 // SaveTxCdrToDB adds a transmisison record to the mysql database
 func (r *XFRecord) SaveTxCdrToDB() error {
 	db, err := DBConnect()
+	// defer the close till after the main function has finished
+	defer db.Close()
+
 	if db != nil {
 		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, localnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 		if err != nil {
 			log.Fatal("Cannot prepare DB statement", err)
-			return err
 		}
 		// Close the statement when we leave main()
 		defer stmt.Close()
@@ -120,9 +122,7 @@ func (r *XFRecord) SaveTxCdrToDB() error {
 		_, err = stmt.Exec(r.Ts.Format(tsLayout), "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, "", "", "", r.Owner, r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
-			return err
 		}
-		return nil
 	}
 	return err
 }
@@ -130,11 +130,12 @@ func (r *XFRecord) SaveTxCdrToDB() error {
 // SaveRxCdrToDB adds a reception record to the mysql database
 func (r *XFRecord) SaveRxCdrToDB() error {
 	db, err := DBConnect()
+	defer db.Close()
+
 	if db != nil {
 		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, localnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 		if err != nil {
 			log.Fatal("Cannot prepare DB statement", err)
-			return err
 		}
 		// Close the statement when we leave main()
 		defer stmt.Close()
@@ -142,9 +143,7 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 		_, err = stmt.Exec(r.Ts.Format(tsLayout), "RECV", r.Commid, r.Modem, r.Filename, "", "fax", r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, fmt.Sprintf("\"%s\"", r.Cidname), fmt.Sprintf("\"%s\"", r.Cidnum), "", "", r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
-			return err
 		}
-		return nil
 	}
 	return err
 }
@@ -200,10 +199,7 @@ func DBConnect() (*sql.DB, error) {
 	db, err := sql.Open("mysql", Config.MySQL.User+":"+Config.MySQL.Pass+"@tcp("+Config.MySQL.Host+":"+Config.MySQL.Port+")/"+Config.MySQL.Database+"?charset="+charset)
 	if err != nil {
 		log.Fatal("Cannot open DB connection", err)
-		return nil, err
 	}
-	// defer the close till after the main function has finished
-	defer db.Close()
 
-	return db, nil
+	return db, err
 }
