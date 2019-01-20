@@ -133,14 +133,12 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 
 	if db != nil {
 		//get user's email
-		var useremail string
-		if r.Destnum != "" {
-			err = db.QueryRow("SELECT email from numbers where faxnumber = ?", r.Destnum).Scan(&useremail)
+		useremail := r.Destnum
+		if useremail != "" {
+			err = db.QueryRow("SELECT email from numbers where faxnum = ?", r.Destnum).Scan(&useremail)
 			if err != nil {
 				log.Fatal(err)
 			}
-		} else {
-			useremail = r.Destnum
 		}
 
 		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, destnumber, tsi, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
