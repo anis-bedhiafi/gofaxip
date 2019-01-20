@@ -135,7 +135,7 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 		//get user's email
 		var useremail string
 		if r.Destnum != "" {
-			err = db.QueryRow("SELECT email from numbers where destnumber = ?", r.Destnum).Scan(&useremail)
+			err = db.QueryRow("SELECT email from numbers where faxnumber = ?", r.Destnum).Scan(&useremail)
 			if err != nil {
 				log.Fatal(err)
 			}
