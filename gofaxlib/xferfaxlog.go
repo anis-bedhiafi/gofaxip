@@ -118,7 +118,7 @@ func (r *XFRecord) SaveTxCdrToDB() error {
 		}
 		defer stmt.Close()
 
-		_, err = stmt.Exec(r.Ts, "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, r.Owner, r.Dcs)
+		_, err = stmt.Exec(r.Ts, "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.Cidnum, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, r.Owner, r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
 		}
