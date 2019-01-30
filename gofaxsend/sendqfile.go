@@ -66,7 +66,9 @@ func SendQfile(qfilename string) (int, error) {
 	}
 
 	faxjob.Number = fmt.Sprint(gofaxlib.Config.Gofaxsend.CallPrefix, qf.GetString("external"))
-	faxjob.Cidnum = gofaxlib.Config.Gofaxsend.FaxNumber //qf.GetString("faxnumber")
+	//faxjob.Cidnum = gofaxlib.Config.Gofaxsend.FaxNumber //qf.GetString("faxnumber")
+	faxjob.Cidnum = qf.GetString("faxnumber")
+	faxjob.Cidname = qf.GetString("faxname")
 	faxjob.Ident = gofaxlib.Config.Freeswitch.Ident
 	faxjob.Header = gofaxlib.Config.Freeswitch.Header
 	faxjob.Gateways = gofaxlib.Config.Freeswitch.Gateway
@@ -126,16 +128,16 @@ func SendQfile(qfilename string) (int, error) {
 
 	}
 
-	switch gofaxlib.Config.Gofaxsend.CidName {
-	case "sender":
-		faxjob.Cidname = qf.GetString("sender")
-	case "number":
-		faxjob.Cidname = qf.GetString("number")
-	case "cidnum":
-		faxjob.Cidname = faxjob.Cidnum
-	default:
-		faxjob.Cidname = gofaxlib.Config.Gofaxsend.CidName
-	}
+	// switch gofaxlib.Config.Gofaxsend.CidName {
+	// case "sender":
+	// 	faxjob.Cidname = qf.GetString("sender")
+	// case "number":
+	// 	faxjob.Cidname = qf.GetString("number")
+	// case "cidnum":
+	// 	faxjob.Cidname = faxjob.Cidnum
+	// default:
+	// 	faxjob.Cidname = gofaxlib.Config.Gofaxsend.CidName
+	// }
 
 	// Start session
 	sessionlog, err := gofaxlib.NewSessionLogger()
