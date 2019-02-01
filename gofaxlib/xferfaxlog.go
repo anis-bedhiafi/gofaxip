@@ -145,7 +145,7 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 		}
 		//get client_code
 		client_code := ""
-		err = db.QueryRow("SELECT u.client_code from users en JOIN numbers n ON n.user_id = u.id WHERE n.faxnum = ? AND u.enabled = 1 AND n.enabled = 1", r.Destnum).Scan(&client_code)
+		err = db.QueryRow("SELECT u.client_code from users u JOIN numbers n ON n.user_id = u.id WHERE n.faxnum = ? AND u.enabled = 1 AND n.enabled = 1", r.Destnum).Scan(&client_code)
 		if err != nil {
 			log.Fatal(err)
 		}
