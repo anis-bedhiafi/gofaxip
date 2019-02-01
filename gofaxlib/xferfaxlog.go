@@ -64,9 +64,9 @@ func NewXFRecord(result *FaxResult) *XFRecord {
 	r := &XFRecord{
 		Ts:           result.StartTs,
 		Commid:       result.sessionlog.CommID(),
-		TransfeRrate: result.TransfeRrate,
+		TransferRate: result.TransferRate,
 		Ecm:          result.Ecm,
-		Params:       EncodeParams(result.TransfeRrate, result.Ecm),
+		Params:       EncodeParams(result.TransferRate, result.Ecm),
 		Pages:        result.TransferredPages,
 		Jobtime:      duration,
 		Conntime:     duration,
@@ -82,13 +82,13 @@ func NewXFRecord(result *FaxResult) *XFRecord {
 
 func (r *XFRecord) formatTransmissionReport() string {
 	return fmt.Sprintf(xLogFormat, r.Ts.Format(tsLayout), "SEND", r.Commid, r.Modem,
-		r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.TransfeRrate, r.Ecm, r.Params, r.Pages,
+		r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.RemoteID, r.TransferRate, r.Ecm, r.Params, r.Pages,
 		formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, r.Owner, r.Dcs)
 }
 
 func (r *XFRecord) formatReceptionReport() string {
 	return fmt.Sprintf(xLogFormat, r.Ts.Format(tsLayout), "RECV", r.Commid, r.Modem,
-		r.Filename, "", "fax", r.Destnum, r.RemoteID, r.TransfeRrate, r.Ecm, r.Params, r.Pages,
+		r.Filename, "", "fax", r.Destnum, r.RemoteID, r.TransferRate, r.Ecm, r.Params, r.Pages,
 		formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason,
 		fmt.Sprintf("\"%s\"", r.Cidname), fmt.Sprintf("\"%s\"", r.Cidnum), r.Callid, "", r.Dcs)
 }
@@ -121,7 +121,7 @@ func (r *XFRecord) SaveTxCdrToDB() error {
 		}
 		defer stmt.Close()
 
-		_, err = stmt.Exec(r.Ts, "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.Cidnum, r.TransfeRrate, r.Ecm, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, r.Owner, r.Dcs)
+		_, err = stmt.Exec(r.Ts, "SEND", r.Commid, r.Modem, r.Jobid, r.Jobtag, r.Sender, r.Destnum, r.Cidnum, r.TransferRate, r.Ecm, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, r.Owner, r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
 		}
@@ -150,7 +150,7 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 		}
 		defer stmt.Close()
 
-		_, err = stmt.Exec(r.Ts, "RECV", r.Commid, r.Modem, r.Filename, "", useremail, r.Destnum, r.RemoteID, r.TransfeRrate, r.Ecm, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, useremail, r.Dcs)
+		_, err = stmt.Exec(r.Ts, "RECV", r.Commid, r.Modem, r.Filename, "", useremail, r.Destnum, r.RemoteID, r.TransferRate, r.Ecm, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, useremail, r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
 		}
