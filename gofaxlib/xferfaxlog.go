@@ -144,11 +144,11 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 			}
 		}
 		//get client_code
-		client_code := ""
-		err = db.QueryRow("SELECT u.client_code from users u JOIN numbers n ON n.user_id = u.id WHERE n.faxnum = ? AND u.enabled = 1 AND n.enabled = 1", r.Destnum).Scan(&client_code)
-		if err != nil {
-			log.Fatal(err)
-		}
+		// client_code := ""
+		// err = db.QueryRow("SELECT u.client_code from users u JOIN numbers n ON n.user_id = u.id WHERE n.faxnum = ? AND u.enabled = 1 AND n.enabled = 1", r.Destnum).Scan(&client_code)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 
 		stmt, err := db.Prepare("INSERT INTO xferfaxlog (timestamp, entrytype, commid, modem, jobid, jobtag, user, destnumber, tsi, transferrate, ecm, params, npages, jobtime, conntime, reason, cidname, cidnumber, callid, owner, dcs) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )")
 		if err != nil {
@@ -156,7 +156,7 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 		}
 		defer stmt.Close()
 
-		_, err = stmt.Exec(r.Ts, "RECV", r.Commid, r.Modem, r.Filename, "", useremail, r.Destnum, r.RemoteID, r.TransferRate, r.Ecm, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, client_code, r.Dcs)
+		_, err = stmt.Exec(r.Ts, "RECV", r.Commid, r.Modem, r.Filename, "", useremail, r.Destnum, r.RemoteID, r.TransferRate, r.Ecm, r.Params, r.Pages, formatDuration(r.Jobtime), formatDuration(r.Conntime), r.Reason, r.Cidname, r.Cidnum, r.Callid, useremail, r.Dcs)
 		if err != nil {
 			log.Fatal("Cannot execute query", err)
 		}
