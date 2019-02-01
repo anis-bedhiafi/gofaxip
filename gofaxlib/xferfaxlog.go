@@ -138,7 +138,7 @@ func (r *XFRecord) SaveRxCdrToDB() error {
 		//get user's email
 		useremail := r.Destnum
 		if useremail != "" {
-			err = db.QueryRow("SELECT email from numbers where faxnum = ?", r.Destnum).Scan(&useremail)
+			err = db.QueryRow("SELECT e.email from email_number en JOIN numbers n ON en.number_id = n.id JOIN emails e ON en.email_id = e.id WHERE n.faxnum = ? AND n.enabled = 1 AND en.shared = 0", r.Destnum).Scan(&useremail)
 			if err != nil {
 				log.Fatal(err)
 			}
