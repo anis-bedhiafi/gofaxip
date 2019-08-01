@@ -26,7 +26,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib/logger"
+	"github.com/gonicus/gofaxip/gofaxlib/logger"
 )
 
 // One item (TIFF file) of a fax

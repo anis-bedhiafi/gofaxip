@@ -24,8 +24,8 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib"
-	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib/logger"
+	"github.com/gonicus/gofaxip/gofaxlib"
+	"github.com/gonicus/gofaxip/gofaxlib/logger"
 
 	"github.com/fiorix/go-eventsocket/eventsocket"
 	"github.com/google/uuid"

@@ -26,7 +26,7 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib"
+	"github.com/gonicus/gofaxip/gofaxlib"
 
 	"github.com/fiorix/go-eventsocket/eventsocket"
 )

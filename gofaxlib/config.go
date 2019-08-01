@@ -20,7 +20,7 @@ package gofaxlib
 import (
 	"log"
 
-	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib/logger"
+	"github.com/gonicus/gofaxip/gofaxlib/logger"
 
 	gcfg "gopkg.in/gcfg.v1"
 )

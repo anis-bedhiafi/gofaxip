@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib/logger"
+	"github.com/gonicus/gofaxip/gofaxlib/logger"
 )
 
 const (

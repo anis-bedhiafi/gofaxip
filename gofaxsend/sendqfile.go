@@ -25,8 +25,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib"
-	"github.com/anis-bedhiafi/gofaxip-mysql/gofaxlib/logger"
+	"github.com/gonicus/gofaxip/gofaxlib"
+	"github.com/gonicus/gofaxip/gofaxlib/logger"
 )
 
 const (
